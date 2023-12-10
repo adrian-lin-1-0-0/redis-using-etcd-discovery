@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  etcd:
+    image: quay.io/coreos/etcd:v3.4.0
+    environment:
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+      ETCD_ADVERTISE_CLIENT_URLS: http://etcd:2379
+      DATA_DIR: /etcd-data
+    tmpfs:
+      - /etcd-data
+
+  redis1:
+    image: redis:6.0.9
+    depends_on:
+      - etcd
+    network_mode: "service:redis1-registrar"
+
+
+  redis1-registrar:
+    build: ./redis-registrar
+    depends_on:
+      - etcd
+    environment:
+      ETCD_ENDPOINT: etcd:2379
+
+  redis2:
+    image: redis:6.0.9
+    depends_on:
+      - etcd
+    network_mode: "service:redis2-registrar"
+
+  redis2-registrar:
+    build: ./redis-registrar
+    depends_on:
+      - etcd
+    environment:
+      ETCD_ENDPOINT: etcd:2379
